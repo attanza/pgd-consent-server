@@ -1,0 +1,125 @@
+@baseUrl = http://localhost:10000
+# @baseUrl = http://pgd-consent.io:10000
+@id = 62b49f7f661ff6f67ecc7a13
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNjJiNDlmN2Y2NjFmZjZmNjdlY2M3YTEzIiwiaWF0IjoxNjU2MzQzNjQ3LCJleHAiOjE2NTYzNDcyNDd9.ny57Ah2e7OkG-zy1riZmLEcxYtDT2F2Csol0spbPmuc
+
+### Auth
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "dani.lesmiadi@pegadaian.co.id",
+  "password": "password"
+}
+### Auth
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Dani Lesmiadi",
+  "email": "dani.lesmiadi@pegadaian.co.id",
+  "password": "password"
+}
+
+### Auth me
+GET {{baseUrl}}/auth/me
+Authorization: {{token}}
+
+### users
+GET {{baseUrl}}/users
+Authorization: {{token}}
+
+### users create
+POST {{baseUrl}}/users
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "name": "Dani",
+  "email": "dani@gmail.com",
+  "password": "password"
+}
+
+### users get
+GET {{baseUrl}}/users/{{id}}
+Authorization: {{token}}
+
+### users update
+PUT {{baseUrl}}/users/{{id}}
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+
+}
+
+### users delete
+DELETE {{baseUrl}}/users/{{id}}
+Authorization: {{token}}
+
+### consents
+GET {{baseUrl}}/consents
+Authorization: {{token}}
+
+### consents create
+POST {{baseUrl}}/consents
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "nik": "32732111",
+  "source": "PDS",
+  "name": "Dani Lesmiadi"
+}
+
+### consents get
+GET {{baseUrl}}/consents/32732111
+Authorization: {{token}}
+
+### consents update
+PUT {{baseUrl}}/consents/{{id}}
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "phone": "08122443582",
+  "terms": ["62a5b97e6c43f9b3fc8fb02a"]
+}
+
+### consents delete
+DELETE {{baseUrl}}/consents/62a60bf5651a7af37b5c6705
+Authorization: {{token}}
+
+
+
+### terms
+GET {{baseUrl}}/terms?fieldKey=source&fieldValue=PDS
+Authorization: {{token}}
+
+### terms create
+POST {{baseUrl}}/terms
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "term": "Saya bersedia di ikut sertakan ke dalam program promo",
+  "source": "PDS"
+}
+
+### terms get
+GET {{baseUrl}}/terms/{{id}}
+Authorization: {{token}}
+
+### terms update
+PUT {{baseUrl}}/terms/{{id}}
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "term": "Rekeningn akan di transferkan setiap bulan",
+  "aplikasi": "PDS"
+}
+
+### terms delete
+DELETE {{baseUrl}}/terms/62a5b97e6c43f9b3fc8fb02a
+Authorization: {{token}}
