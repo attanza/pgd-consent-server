@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { EUserRole } from '../shared/interfaces/user-role.enum';
 
 export type UserDocument = User & Document;
 
@@ -28,6 +29,9 @@ export class User {
     default: true,
   })
   isActive: boolean;
+
+  @Prop({ default: EUserRole.VIEWER })
+  role: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -22,8 +22,11 @@ import {
 } from '../utils/response-parser';
 import { CreateTermDto, UpdateTermDto } from './term.dto';
 import { TermService } from './term.service';
+import { RolesGuard } from 'src/shared/guards/roles.guard';
+import { Roles } from 'src/shared/guards/roles.decorator';
+import { EUserRole } from 'src/shared/interfaces/user-role.enum';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('terms')
 export class TermController {
   private resource = 'Term';
@@ -36,6 +39,7 @@ export class TermController {
   }
 
   @Post()
+  @Roles(EUserRole.ADMIN, EUserRole.EDITOR)
   async create(@Body() data: CreateTermDto) {
     if (data.checkLists) {
       await this.service.checkListExists(data.checkLists);
@@ -56,6 +60,7 @@ export class TermController {
   }
 
   @Put(':id')
+  @Roles(EUserRole.ADMIN, EUserRole.EDITOR)
   async update(@Param() { id }: MongoIdPipe, @Body() data: UpdateTermDto) {
     if (data.checkLists) {
       await this.service.checkListExists(data.checkLists);
@@ -65,6 +70,7 @@ export class TermController {
   }
 
   @Delete(':id')
+  @Roles(EUserRole.ADMIN)
   async destroy(@Param() { id }: MongoIdPipe) {
     await this.service.delete(id);
     return responseDelete(this.resource);

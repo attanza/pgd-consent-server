@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -13,6 +12,9 @@ import {
 } from '@nestjs/common';
 import { MongoIdPipe } from '../shared/pipes/mongoId.pipe';
 
+import { Roles } from '../shared/guards/roles.decorator';
+import { RolesGuard } from '../shared/guards/roles.guard';
+import { EUserRole } from '../shared/interfaces/user-role.enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ResourcePaginationPipe } from '../shared/pipes/resource-pagination.pipe';
 import {
@@ -25,7 +27,7 @@ import {
 import { CreateConsentDto, UpdateConsentDto } from './consent.dto';
 import { ConsentService } from './consent.service';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('consents')
 export class ConsentController {
   private resource = 'Consent';
@@ -70,6 +72,7 @@ export class ConsentController {
   }
 
   @Delete(':id')
+  @Roles(EUserRole.ADMIN)
   async destroy(@Param() { id }: MongoIdPipe) {
     await this.service.delete(id);
     return responseDelete(this.resource);
