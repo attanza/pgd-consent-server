@@ -10,6 +10,7 @@ import {
   deleteExpect,
   showExpect,
   unauthorizedExpect,
+  unprocessableEntityExpect,
   updateExpect,
   validationFailedExpect,
 } from './expects';
@@ -60,24 +61,22 @@ describe(`${resource} List`, () => {
   });
 });
 
-// describe(`${resource} validations`, () => {
-//   const postData = {
-//     source: 'PDS',
-//   };
-//   it('will reject if all keys are empty', () => {
-//     return request(APP_URL)
-//       .post(URL)
-//       .set({ Authorization: `Bearer ${token}` })
-//       .send(postData)
-//       .expect(400)
-//       .expect(({ body }) => {
-//         console.log('body', body);
-
-//         const errMessage = `one of fields [nik, phone, email] should exists.`;
-//         validationFailedExpect(expect, body, errMessage);
-//       });
-//   });
-// });
+describe(`${resource} validations`, () => {
+  const postData = {
+    source: 'PDS',
+  };
+  it.only('will reject if all keys are empty', () => {
+    return request(APP_URL)
+      .post(URL)
+      .set({ Authorization: `Bearer ${token}` })
+      .send(postData)
+      .expect(422)
+      .expect(({ body }) => {
+        const errMessage = `one of fields [nik, phone, email, cif] should exists`;
+        unprocessableEntityExpect(expect, body, errMessage);
+      });
+  });
+});
 
 describe(`${resource} Create`, () => {
   it('cannot create if not authenticated', () => {

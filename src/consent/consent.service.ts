@@ -43,16 +43,16 @@ export class ConsentService extends BaseService<ConsentDocument> {
       throw new BadRequestException(`${this.model.modelName} not found`);
     }
     let found: ConsentDocument;
-    const searchable = ['nik', 'phone', 'email'];
+    const keys = ['nik', 'phone', 'email', 'cif'];
     const or: any = [];
     Object.keys(dto).map((d) => {
-      if (searchable.includes(d) && dto[d]) {
+      if (keys.includes(d) && dto[d]) {
         or.push({ [d]: dto[d] });
       }
     });
     found = await this.findOne({ $or: or });
     if (!found) {
-      found = await this.create(dto, ['nik', 'phone', 'email']);
+      found = await this.create(dto, keys);
     } else {
       if (dto.term) {
         const term = await this.checkTerm(dto.term);

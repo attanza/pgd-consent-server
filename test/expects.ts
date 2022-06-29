@@ -32,6 +32,15 @@ export function validationFailedExpect(
   expect(Array.isArray(body.meta.message)).toBeTruthy();
   expect(body.meta.message.includes(errMessage)).toBeTruthy();
 }
+export function unprocessableEntityExpect(
+  expect: jest.Expect,
+  body: any,
+  errMessage: string,
+): void {
+  expect(body.meta).toBeDefined();
+  expect(body.meta.status).toEqual(422);
+  expect(body.meta.message).toEqual(errMessage);
+}
 
 export function createExpect(
   expect: jest.Expect,

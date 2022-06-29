@@ -12,6 +12,10 @@ import { EApplicationType } from '../shared/interfaces/apllication-type.enum';
 
 export class CreateConsentDto {
   @IsOptional()
+  @MaxLength(20)
+  cif: string;
+
+  @IsOptional()
   @MaxLength(30)
   nik: string;
 

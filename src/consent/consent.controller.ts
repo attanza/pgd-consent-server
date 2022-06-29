@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Query,
+  UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
 import { MongoIdPipe } from '../shared/pipes/mongoId.pipe';
@@ -38,6 +39,7 @@ export class ConsentController {
       'name',
       'email',
       'phone',
+      'cif',
     ]);
     return responseCollection(this.resource, result);
   }
@@ -45,8 +47,8 @@ export class ConsentController {
   @Post()
   async create(@Body() data: CreateConsentDto) {
     if (!data.email && !data.nik && !data.phone) {
-      throw new BadRequestException(
-        'one of fields [nik, phone, email] should exists.',
+      throw new UnprocessableEntityException(
+        'one of fields [nik, phone, email, cif] should exists.',
       );
     }
 

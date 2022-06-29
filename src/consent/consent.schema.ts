@@ -29,6 +29,11 @@ export class Consent {
   @Prop({
     index: true,
   })
+  cif: string;
+
+  @Prop({
+    index: true,
+  })
   email: string;
 
   @Prop({
