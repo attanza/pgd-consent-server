@@ -50,7 +50,7 @@ export class ConsentController {
   async create(@Body() data: CreateConsentDto) {
     if (!data.email && !data.nik && !data.phone) {
       throw new UnprocessableEntityException(
-        'one of fields [nik, phone, email, cif] should exists.',
+        'one of fields [nik, phone, email, cif] should exists',
       );
     }
 

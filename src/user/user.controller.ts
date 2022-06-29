@@ -23,7 +23,7 @@ import {
 import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { UserService } from './user.service';
 import { EUserRole } from '../shared/interfaces/user-role.enum';
-import { RolesGuard } from 'src/shared/guards/roles.guard';
+import { RolesGuard } from '../shared/guards/roles.guard';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')

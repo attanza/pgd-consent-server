@@ -3,6 +3,11 @@ export function unauthorizedExpect(expect: jest.Expect, body: any): void {
   expect(body.meta.status).toEqual(401);
   expect(body.meta.message).toEqual('Unauthorized');
 }
+export function forbiddenExpect(expect: jest.Expect, body: any): void {
+  expect(body.meta).toBeDefined();
+  expect(body.meta.status).toEqual(403);
+  expect(body.meta.message).toEqual('Forbidden resource');
+}
 
 export function collectionExpects(
   expect: jest.Expect,

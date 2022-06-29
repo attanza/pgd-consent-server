@@ -23,19 +23,19 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsIn(Object.values(EUserRole))
-  role: string;
+  role?: string;
 }
 
 export class UpdateUserDto {
   @IsOptional()
   @MaxLength(150)
-  name: string;
+  name?: string;
 
   @IsOptional()
   @IsEmail()
-  email: string;
+  email?: string;
 
   @IsOptional()
   @IsIn(Object.values(EUserRole))
-  role: string;
+  role?: string;
 }

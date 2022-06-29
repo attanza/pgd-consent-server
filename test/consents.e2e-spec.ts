@@ -3,28 +3,31 @@ import mongoose from 'mongoose';
 import request from 'supertest';
 import { UpdateConsentDto } from '../src/consent/consent.dto';
 import { Consent, ConsentSchema } from '../src/consent/consent.schema';
+import { EUserRole } from '../src/shared/interfaces/user-role.enum';
 import { User, UserSchema } from '../src/user/user.schema';
 import {
   collectionExpects,
   createExpect,
   deleteExpect,
+  forbiddenExpect,
   showExpect,
   unauthorizedExpect,
   unprocessableEntityExpect,
   updateExpect,
   validationFailedExpect,
 } from './expects';
-import { APP_URL, faker, generateToken } from './helper';
+import { APP_URL, faker, generateTokenByRole } from './helper';
 const resource = 'Consent';
 const URL = '/consents';
 let userModel: mongoose.Model<User>;
 let consentModel: mongoose.Model<Consent>;
-let token;
+let adminToken;
+let viewerToken;
 let found;
+let id = '';
 
 const createData: UpdateConsentDto = {
   name: faker.name(),
-  nik: faker.bb_pin(),
   email: faker.email(),
   source: 'PDS',
 };
@@ -33,9 +36,9 @@ beforeAll(async () => {
   const MONGOOSE_URI = process.env.DB_URL;
   await mongoose.connect(MONGOOSE_URI);
   userModel = mongoose.model('User', UserSchema);
+  adminToken = await generateTokenByRole(userModel, EUserRole.ADMIN);
+  viewerToken = await generateTokenByRole(userModel, EUserRole.VIEWER);
   consentModel = mongoose.model('Consent', ConsentSchema);
-  const user = await userModel.findOne();
-  token = await generateToken(user);
 });
 afterAll(async () => {
   await consentModel.deleteOne({ nik: createData.nik });
@@ -53,7 +56,7 @@ describe(`${resource} List`, () => {
   it('can get list', () => {
     return request(APP_URL)
       .get(URL)
-      .set({ Authorization: `Bearer ${token}` })
+      .set({ Authorization: `Bearer ${adminToken}` })
       .expect(200)
       .expect(({ body }) => {
         collectionExpects(expect, body, resource);
@@ -65,10 +68,10 @@ describe(`${resource} validations`, () => {
   const postData = {
     source: 'PDS',
   };
-  it.only('will reject if all keys are empty', () => {
+  it('will reject if all keys are empty', () => {
     return request(APP_URL)
       .post(URL)
-      .set({ Authorization: `Bearer ${token}` })
+      .set({ Authorization: `Bearer ${adminToken}` })
       .send(postData)
       .expect(422)
       .expect(({ body }) => {
@@ -91,7 +94,7 @@ describe(`${resource} Create`, () => {
   it('can create', () => {
     return request(APP_URL)
       .post(URL)
-      .set({ Authorization: `Bearer ${token}` })
+      .set({ Authorization: `Bearer ${adminToken}` })
       .send(createData)
       .expect(201)
       .expect(({ body }) => {
@@ -101,19 +104,43 @@ describe(`${resource} Create`, () => {
         Object.keys(dataToCheck).map((key) => {
           expect(output.data[key]).toEqual(dataToCheck[key]);
         });
+        id = body.data._id;
       });
   });
-
-  // it('cannot create if duplicate', () => {
-  //   return request(APP_URL)
-  //     .post(URL)
-  //     .set({ Authorization: `Bearer ${token}` })
-  //     .send(createData)
-  //     .expect(400)
-  //     .expect(({ body }) => {
-  //       duplicateErrorExpect(expect, body);
-  //     });
-  // });
+  it('will update on second create', () => {
+    const secondCreate = { ...createData, nik: faker.bb_pin() };
+    return request(APP_URL)
+      .post(URL)
+      .set({ Authorization: `Bearer ${adminToken}` })
+      .send(secondCreate)
+      .expect(201)
+      .expect(({ body }) => {
+        createExpect(expect, body, resource);
+        const output = { ...body };
+        const dataToCheck = { ...secondCreate };
+        Object.keys(dataToCheck).map((key) => {
+          expect(output.data[key]).toEqual(dataToCheck[key]);
+        });
+        expect(id).toEqual(body.data._id);
+      });
+  });
+  it('will update on third create', () => {
+    const thirdCreate = { ...createData, phone: faker.phone() };
+    return request(APP_URL)
+      .post(URL)
+      .set({ Authorization: `Bearer ${adminToken}` })
+      .send(thirdCreate)
+      .expect(201)
+      .expect(({ body }) => {
+        createExpect(expect, body, resource);
+        const output = { ...body };
+        const dataToCheck = { ...thirdCreate };
+        Object.keys(dataToCheck).map((key) => {
+          expect(output.data[key]).toEqual(dataToCheck[key]);
+        });
+        expect(id).toEqual(body.data._id);
+      });
+  });
 });
 describe(`${resource} Detail`, () => {
   it('cannot get detail if not authenticated', async () => {
@@ -126,22 +153,10 @@ describe(`${resource} Detail`, () => {
         unauthorizedExpect(expect, body);
       });
   });
-
-  // it('cannot get detail if invalid mongo id', () => {
-  //   return request(APP_URL)
-  //     .get(`${URL}/sfgdfg`)
-  //     .set({ Authorization: `Bearer ${token}` })
-  //     .expect(400)
-  //     .expect(({ body }) => {
-  //       console.log('body', body);
-  //       const errMessage = 'id must be a mongodb id';
-  //       validationFailedExpect(expect, body, errMessage);
-  //     });
-  // });
   it('cannot get detail if not exists', () => {
     return request(APP_URL)
       .get(`${URL}/62b9b69c41819e19ac9aa580`)
-      .set({ Authorization: `Bearer ${token}` })
+      .set({ Authorization: `Bearer ${adminToken}` })
       .expect(400)
       .expect(({ body }) => {
         expect(body.meta).toBeDefined();
@@ -152,7 +167,49 @@ describe(`${resource} Detail`, () => {
   it('can get detail', () => {
     return request(APP_URL)
       .get(`${URL}/${found._id}`)
-      .set({ Authorization: `Bearer ${token}` })
+      .set({ Authorization: `Bearer ${adminToken}` })
+      .expect(200)
+      .expect(({ body }) => {
+        showExpect(expect, body, resource);
+        const output = { ...body };
+        const dataToCheck = { ...createData };
+        Object.keys(dataToCheck).map((key) => {
+          expect(output.data[key]).toEqual(dataToCheck[key]);
+        });
+      });
+  });
+  it('can get detail by nik', () => {
+    return request(APP_URL)
+      .get(`${URL}/${found.nik}`)
+      .set({ Authorization: `Bearer ${adminToken}` })
+      .expect(200)
+      .expect(({ body }) => {
+        showExpect(expect, body, resource);
+        const output = { ...body };
+        const dataToCheck = { ...createData };
+        Object.keys(dataToCheck).map((key) => {
+          expect(output.data[key]).toEqual(dataToCheck[key]);
+        });
+      });
+  });
+  it('can get detail by phone', () => {
+    return request(APP_URL)
+      .get(`${URL}/${found.phone}`)
+      .set({ Authorization: `Bearer ${adminToken}` })
+      .expect(200)
+      .expect(({ body }) => {
+        showExpect(expect, body, resource);
+        const output = { ...body };
+        const dataToCheck = { ...createData };
+        Object.keys(dataToCheck).map((key) => {
+          expect(output.data[key]).toEqual(dataToCheck[key]);
+        });
+      });
+  });
+  it('can get detail by email', () => {
+    return request(APP_URL)
+      .get(`${URL}/${found.email}`)
+      .set({ Authorization: `Bearer ${adminToken}` })
       .expect(200)
       .expect(({ body }) => {
         showExpect(expect, body, resource);
@@ -173,21 +230,10 @@ describe(`${resource} Update`, () => {
         unauthorizedExpect(expect, body);
       });
   });
-
-  // it('cannot update if invalid mongo id', () => {
-  //   return request(APP_URL)
-  //     .put(`${URL}/sfgdfg`)
-  //     .set({ Authorization: `Bearer ${token}` })
-  //     .expect(400)
-  //     .expect(({ body }) => {
-  //       const errMessage = 'id must be a mongodb id';
-  //       validationFailedExpect(expect, body, errMessage);
-  //     });
-  // });
   it('cannot update if not exists', () => {
     return request(APP_URL)
       .put(`${URL}/5f091216ae2a140e064d2326`)
-      .set({ Authorization: `Bearer ${token}` })
+      .set({ Authorization: `Bearer ${adminToken}` })
       .expect(400)
       .expect(({ body }) => {
         expect(body.meta).toBeDefined();
@@ -201,7 +247,7 @@ describe(`${resource} Update`, () => {
 
     return request(APP_URL)
       .put(`${URL}/${found._id}`)
-      .set({ Authorization: `Bearer ${token}` })
+      .set({ Authorization: `Bearer ${adminToken}` })
       .send(updatedData)
       .expect(200)
       .expect(({ body }) => {
@@ -226,10 +272,20 @@ describe(`${resource} Delete`, () => {
       });
   });
 
+  it('cannot delete if unauthorized', () => {
+    return request(APP_URL)
+      .delete(`${URL}/${found._id}`)
+      .set({ Authorization: `Bearer ${viewerToken}` })
+      .expect(403)
+      .expect(({ body }) => {
+        forbiddenExpect(expect, body);
+      });
+  });
+
   it('cannot delete if invalid mongo id', () => {
     return request(APP_URL)
       .delete(`${URL}/sfgdfg`)
-      .set({ Authorization: `Bearer ${token}` })
+      .set({ Authorization: `Bearer ${adminToken}` })
       .expect(400)
       .expect(({ body }) => {
         const errMessage = 'id must be a mongodb id';
@@ -239,7 +295,7 @@ describe(`${resource} Delete`, () => {
   it('cannot delete if not exists', () => {
     return request(APP_URL)
       .delete(`${URL}/5f091216ae2a140e064d2326`)
-      .set({ Authorization: `Bearer ${token}` })
+      .set({ Authorization: `Bearer ${adminToken}` })
       .expect(400)
       .expect(({ body }) => {
         expect(body.meta).toBeDefined();
@@ -250,7 +306,7 @@ describe(`${resource} Delete`, () => {
   it('can delete', async () => {
     return request(APP_URL)
       .delete(`${URL}/${found._id}`)
-      .set({ Authorization: `Bearer ${token}` })
+      .set({ Authorization: `Bearer ${adminToken}` })
       .expect(200)
       .expect(({ body }) => {
         deleteExpect(expect, body, resource);

@@ -73,6 +73,10 @@ export abstract class BaseService<T> {
     return created;
   }
 
+  async insertMany(data: any[]) {
+    await this.dbModel.insertMany(data);
+  }
+
   async update(id: string, updateDto: any, uniques: string[] = []): Promise<T> {
     const found = await this.getById(id);
     if (Object.keys(updateDto).length > 0) {
