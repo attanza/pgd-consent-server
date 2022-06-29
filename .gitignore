@@ -145,3 +145,5 @@ dist
 .pnp.*
 
 # End of https://mrkandreev.name/snippets/gitignore-generator/#OSX,Node
+build.sh
+Dockerfile.example

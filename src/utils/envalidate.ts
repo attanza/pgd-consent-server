@@ -15,5 +15,6 @@ export const envalidate = () => {
     MINIO_BUCKET_NAME: str(),
     REDIS_URL: str(),
     REDIS_PORT: port(),
+    FRONT_END_URL: str(),
   });
 };

@@ -21,7 +21,7 @@ async function bootstrap() {
   const PORT = process.env.PORT;
   app.disable('x-powered-by');
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: [process.env.FRONT_END_URL],
   });
   app.use(helmet());
   app.use(morgan('combined'));
