@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { FilterQuery, ProjectionType, QueryOptions } from 'mongoose';
 import { Pagination } from 'mongoose-paginate-ts';
 
@@ -36,10 +32,7 @@ export abstract class BaseService<T> {
     options?: QueryOptions<any>,
     populate: any = '',
   ): Promise<T> {
-    return this.dbModel
-      .findOne(filter, projection, options)
-      .populate(populate)
-      .exec();
+    return this.dbModel.findOne(filter, projection, options).populate(populate).exec();
   }
 
   async findById<T>(
@@ -101,7 +94,7 @@ export abstract class BaseService<T> {
    * @param id: string
    * @returns Promise<resource>
    */
-  async getById(id: string) {
+  async getById<T>(id: string) {
     const found = await this.dbModel.findById(id).exec();
     if (!found) {
       throw new BadRequestException(`${this.dbModel.modelName} not found`);
@@ -116,17 +109,11 @@ export abstract class BaseService<T> {
   async shouldExists(ids: string[]) {
     const found = await this.dbModel.find({ _id: { $in: ids } });
     if (found.length !== ids.length) {
-      throw new UnprocessableEntityException(
-        `${this.dbModel.modelName} not exists`,
-      );
+      throw new UnprocessableEntityException(`${this.dbModel.modelName} not exists`);
     }
   }
 
-  async shouldUnique(
-    dto: any,
-    uniques: string[],
-    id?: string,
-  ): Promise<boolean> {
+  async shouldUnique(dto: any, uniques: string[], id?: string): Promise<boolean> {
     if (uniques.length > 0) {
       const or = [];
       uniques.map((key) => {
@@ -135,10 +122,7 @@ export abstract class BaseService<T> {
         }
       });
       if (or.length > 0) {
-        const found = await this.dbModel
-          .findOne({ $or: or })
-          .select('_id')
-          .exec();
+        const found = await this.dbModel.findOne({ $or: or }).select('_id').exec();
 
         if (found && id && found._id.toString() === id.toString()) {
           return true;

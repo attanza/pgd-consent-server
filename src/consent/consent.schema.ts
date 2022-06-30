@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
-import { CheckList } from 'src/check-list/check-list.schema';
+import { CheckList } from '../check-list/check-list.schema';
 
 import { Term } from '../term/term.schema';
 import { MINIO_URL } from '../utils/constants';

@@ -1,44 +1,35 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isMongoId } from 'class-validator';
 import { Pagination } from 'mongoose-paginate-ts';
-import { Term } from 'src/term/term.schema';
 import { CheckListDocument } from '../check-list/check-list.schema';
+import { Term } from '../term/term.schema';
 
+import { MinioClientService } from 'src/minio-client/minio-client.service';
 import { BaseService } from '../shared/services/base.service';
 import { TermService } from '../term/term.service';
 import { CreateConsentDto, UpdateConsentDto } from './consent.dto';
 import { Consent, ConsentDocument } from './consent.schema';
-
+import * as crypto from 'crypto';
 @Injectable()
 export class ConsentService extends BaseService<ConsentDocument> {
   constructor(
     @InjectModel(Consent.name) private model: Pagination<ConsentDocument>,
     private readonly termService: TermService,
+    private readonly minioService: MinioClientService,
   ) {
     super(model);
   }
 
   async checkTerm(id: string) {
-    const term: Term = await this.termService.findOrFail(
-      { _id: id },
-      {},
-      {},
-      'checkLists',
-    );
+    const term: Term = await this.termService.findOrFail({ _id: id }, {}, {}, 'checkLists');
     if (!term) {
       throw new UnprocessableEntityException('Term not found');
     }
     return term;
   }
 
-  async createOrUpdate(
-    dto: CreateConsentDto | UpdateConsentDto,
-  ): Promise<ConsentDocument> {
+  async createOrUpdate(dto: CreateConsentDto | UpdateConsentDto): Promise<ConsentDocument> {
     if (Object.keys(dto).length === 0) {
       throw new BadRequestException(`${this.model.modelName} not found`);
     }
@@ -57,9 +48,7 @@ export class ConsentService extends BaseService<ConsentDocument> {
       if (dto.term) {
         const term = await this.checkTerm(dto.term);
         const checkListString: string[] = [];
-        term.checkLists.forEach((c: CheckListDocument) =>
-          checkListString.push(c._id.toString()),
-        );
+        term.checkLists.forEach((c: CheckListDocument) => checkListString.push(c._id.toString()));
 
         let checkListIncluded = true;
         if (dto.checkLists && dto.checkLists.length > 0) {
@@ -71,9 +60,7 @@ export class ConsentService extends BaseService<ConsentDocument> {
           console.log('checkListIncluded', checkListIncluded);
 
           if (!checkListIncluded) {
-            throw new UnprocessableEntityException(
-              'One or more check list is invalid',
-            );
+            throw new UnprocessableEntityException('One or more check list is invalid');
           }
         }
       }
@@ -119,14 +106,23 @@ export class ConsentService extends BaseService<ConsentDocument> {
     return found;
   }
 
-  // async addAttachment(id: string, file: BufferedFile) {
-  //   const consent = await this.findById<ConsentDocument>(id);
-  //   if (consent) {
-  //     const filename = await this.minioService.upload(file);
-  //     consent.attachments.push(filename);
-  //     await consent.save();
-  //   }
-  //   return consent;
-  //   // await this.queueService.fileUpload(id, file);
-  // }
+  async addAttachment(id: string, file: Express.Multer.File) {
+    if (!(file.mimetype.includes('jpeg') || file.mimetype.includes('png'))) {
+      throw new BadRequestException('File type not supported');
+    }
+    const timestamp = Date.now().toString();
+    const hashedFileName = crypto.createHash('md5').update(timestamp).digest('hex');
+    const extension = file.originalname.substring(
+      file.originalname.lastIndexOf('.'),
+      file.originalname.length,
+    );
+
+    // We need to append the extension at the end otherwise Minio will save it as a generic file
+    const filename = hashedFileName + extension;
+
+    const consent = await this.getById<ConsentDocument>(id);
+    consent.attachments.push(filename);
+    await Promise.all([this.minioService.upload(file, filename), consent.save()]);
+    return consent;
+  }
 }
