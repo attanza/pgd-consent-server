@@ -1,10 +1,7 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
 import { CreateCheckListDto } from '../src/check-list/check-list.dto';
-import {
-  CheckList,
-  CheckListSchema,
-} from '../src/check-list/check-list.schema';
+import { CheckList, CheckListSchema } from '../src/check-list/check-list.schema';
 import request from 'supertest';
 import { User, UserSchema } from '../src/user/user.schema';
 import {

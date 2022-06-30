@@ -6,11 +6,7 @@ import { CheckList, CheckListSchema } from './check-list.schema';
 import { CheckListService } from './check-list.service';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: CheckList.name, schema: CheckListSchema },
-    ]),
-  ],
+  imports: [MongooseModule.forFeature([{ name: CheckList.name, schema: CheckListSchema }])],
   providers: [CheckListService],
   exports: [CheckListService],
   controllers: [CheckListController],

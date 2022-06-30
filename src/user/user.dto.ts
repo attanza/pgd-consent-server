@@ -1,11 +1,4 @@
-import {
-  IsEmail,
-  IsIn,
-  IsNotEmpty,
-  IsOptional,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty, IsOptional, MaxLength, MinLength } from 'class-validator';
 import { EUserRole } from 'src/shared/interfaces/user-role.enum';
 
 export class CreateUserDto {

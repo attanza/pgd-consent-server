@@ -94,7 +94,7 @@ export abstract class BaseService<T> {
    * @param id: string
    * @returns Promise<resource>
    */
-  async getById<T>(id: string) {
+  async getById(id: string) {
     const found = await this.dbModel.findById(id).exec();
     if (!found) {
       throw new BadRequestException(`${this.dbModel.modelName} not found`);

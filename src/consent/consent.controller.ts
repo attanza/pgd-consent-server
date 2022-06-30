@@ -91,7 +91,7 @@ export class ConsentController {
     if (!file) {
       throw new BadRequestException('file is required');
     }
-    const result = await this.service.addAttachment(id, file);
-    return responseSuccess('File uploaded', result);
+    await this.service.addAttachment(id, file);
+    return responseSuccess('File uploaded', undefined);
   }
 }

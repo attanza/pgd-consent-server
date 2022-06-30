@@ -7,10 +7,7 @@ import { responseSuccess } from 'src/utils/response-parser';
 import { RegisterDto } from './auth.dto';
 @Injectable()
 export class AuthService {
-  constructor(
-    private userService: UserService,
-    private jwtService: JwtService,
-  ) {}
+  constructor(private userService: UserService, private jwtService: JwtService) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user: UserDocument = await this.userService.findOne<UserDocument>({

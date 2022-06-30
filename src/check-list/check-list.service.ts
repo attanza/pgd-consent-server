@@ -7,9 +7,7 @@ import { CheckList, CheckListDocument } from './check-list.schema';
 
 @Injectable()
 export class CheckListService extends BaseService<CheckListDocument> {
-  constructor(
-    @InjectModel(CheckList.name) private model: Pagination<CheckListDocument>,
-  ) {
+  constructor(@InjectModel(CheckList.name) private model: Pagination<CheckListDocument>) {
     super(model);
   }
 }

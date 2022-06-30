@@ -31,18 +31,12 @@ export const createUsers = async (userModel: mongoose.Model<User>) => {
   await userModel.insertMany(userData);
 };
 
-export const getUser = async (
-  userModel: mongoose.Model<User>,
-  role: EUserRole,
-) => {
+export const getUser = async (userModel: mongoose.Model<User>, role: EUserRole) => {
   const user = await userModel.findOne({ role }).exec();
   return user;
 };
 
-export const generateTokenByRole = async (
-  userModel: mongoose.Model<User>,
-  role: EUserRole,
-) => {
+export const generateTokenByRole = async (userModel: mongoose.Model<User>, role: EUserRole) => {
   const user = await getUser(userModel, role);
   const token = await generateToken(user);
   return token;

@@ -11,11 +11,14 @@ import { TermService } from '../term/term.service';
 import { CreateConsentDto, UpdateConsentDto } from './consent.dto';
 import { Consent, ConsentDocument } from './consent.schema';
 import * as crypto from 'crypto';
+import { QueuesService } from '../queues/queues.service';
+import { IFIleUploadData } from 'src/shared/interfaces/file-upload.interface';
 @Injectable()
 export class ConsentService extends BaseService<ConsentDocument> {
   constructor(
     @InjectModel(Consent.name) private model: Pagination<ConsentDocument>,
     private readonly termService: TermService,
+    private readonly queueService: QueuesService,
     private readonly minioService: MinioClientService,
   ) {
     super(model);
@@ -119,10 +122,16 @@ export class ConsentService extends BaseService<ConsentDocument> {
 
     // We need to append the extension at the end otherwise Minio will save it as a generic file
     const filename = hashedFileName + extension;
+    const fileUploadData: IFIleUploadData = {
+      id,
+      buffer: file.buffer,
+      filename,
+      mimetype: file.mimetype,
+      size: file.size,
+    };
+    console.log('fileUploadData', fileUploadData);
 
-    const consent = await this.getById<ConsentDocument>(id);
-    consent.attachments.push(filename);
-    await Promise.all([this.minioService.upload(file, filename), consent.save()]);
-    return consent;
+    // await this.queueService.fileUpload(fileUploadData);
+    await this.minioService.upload(file.buffer, filename, file.mimetype, file.size);
   }
 }

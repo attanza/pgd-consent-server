@@ -9,11 +9,7 @@ export function forbiddenExpect(expect: jest.Expect, body: any): void {
   expect(body.meta.message).toEqual('Forbidden resource');
 }
 
-export function collectionExpects(
-  expect: jest.Expect,
-  body: any,
-  resource: string,
-): void {
+export function collectionExpects(expect: jest.Expect, body: any, resource: string): void {
   expect(body.meta).toBeDefined();
   expect(body.meta.status).toEqual(200);
   expect(body.meta.message).toEqual(`${resource} collection`);
@@ -27,11 +23,7 @@ export function collectionExpects(
   expect(Array.isArray(body.data)).toBeTruthy();
 }
 
-export function validationFailedExpect(
-  expect: jest.Expect,
-  body: any,
-  errMessage: string,
-): void {
+export function validationFailedExpect(expect: jest.Expect, body: any, errMessage: string): void {
   expect(body.meta).toBeDefined();
   expect(body.meta.status).toEqual(400);
   expect(Array.isArray(body.meta.message)).toBeTruthy();
@@ -47,11 +39,7 @@ export function unprocessableEntityExpect(
   expect(body.meta.message).toEqual(errMessage);
 }
 
-export function createExpect(
-  expect: jest.Expect,
-  body: any,
-  resource: string,
-): void {
+export function createExpect(expect: jest.Expect, body: any, resource: string): void {
   expect(body.meta).toBeDefined();
   expect(body.meta.status).toEqual(201);
   expect(body.meta.message).toEqual(`${resource} created`);
@@ -65,33 +53,21 @@ export function duplicateErrorExpect(expect: jest.Expect, body: any): void {
   expect(body.meta.message).toEqual(errMessage);
 }
 
-export function showExpect(
-  expect: jest.Expect,
-  body: any,
-  resource: string,
-): void {
+export function showExpect(expect: jest.Expect, body: any, resource: string): void {
   expect(body.meta).toBeDefined();
   expect(body.meta.status).toEqual(200);
   expect(body.meta.message).toEqual(`${resource} detail`);
   expect(body.data).toBeDefined();
 }
 
-export function updateExpect(
-  expect: jest.Expect,
-  body: any,
-  resource: string,
-): void {
+export function updateExpect(expect: jest.Expect, body: any, resource: string): void {
   expect(body.meta).toBeDefined();
   expect(body.meta.status).toEqual(200);
   expect(body.meta.message).toEqual(`${resource} updated`);
   expect(body.data).toBeDefined();
 }
 
-export function deleteExpect(
-  expect: jest.Expect,
-  body: any,
-  resource: string,
-): void {
+export function deleteExpect(expect: jest.Expect, body: any, resource: string): void {
   expect(body.meta).toBeDefined();
   expect(body.meta.status).toEqual(200);
   expect(body.meta.message).toEqual(`${resource} deleted`);

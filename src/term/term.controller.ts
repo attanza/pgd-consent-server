@@ -1,14 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { MongoIdPipe } from '../shared/pipes/mongoId.pipe';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -50,12 +40,10 @@ export class TermController {
 
   @Get(':id')
   async get(@Param() { id }: MongoIdPipe) {
-    const result = await this.service.findOrFail(
-      { _id: id },
-      undefined,
-      undefined,
-      { path: 'checkLists', select: 'content' },
-    );
+    const result = await this.service.findOrFail({ _id: id }, undefined, undefined, {
+      path: 'checkLists',
+      select: 'content',
+    });
     return responseDetail(this.resource, result);
   }
 

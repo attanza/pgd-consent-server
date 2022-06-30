@@ -7,10 +7,7 @@ import { Term, TermSchema } from './term.schema';
 import { TermService } from './term.service';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Term.name, schema: TermSchema }]),
-    CheckListModule,
-  ],
+  imports: [MongooseModule.forFeature([{ name: Term.name, schema: TermSchema }]), CheckListModule],
   controllers: [TermController],
   providers: [TermService],
   exports: [TermService],
