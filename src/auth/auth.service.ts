@@ -21,6 +21,7 @@ export class AuthService {
       return null;
     }
     const isVerified = await verify(user.password, pass);
+
     if (!isVerified) {
       return null;
     }

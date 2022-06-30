@@ -1,14 +1,14 @@
 @baseUrl = http://localhost:10000
 # @baseUrl = http://pgd-consent.io:10000
 @id = 62b49f7f661ff6f67ecc7a13
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNjJiNDlmN2Y2NjFmZjZmNjdlY2M3YTEzIiwiaWF0IjoxNjU2MzQzNjQ3LCJleHAiOjE2NTYzNDcyNDd9.ny57Ah2e7OkG-zy1riZmLEcxYtDT2F2Csol0spbPmuc
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2MmJkMzhkYjc4MzFjNTA3MzBkOWY0OGIiLCJpYXQiOjE2NTY1NjgxNTEsImV4cCI6MTY1NjU3MTc1MX0.oC2EuG39Fv5TniFXEMWD_1_lcKJnWhm4BlJh74laiCo
 
 ### Auth
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "dani.lesmiadi@pegadaian.co.id",
+  "email": "dani.lesmiadi@gmail.com",
   "password": "password"
 }
 ### Auth
@@ -17,12 +17,16 @@ Content-Type: application/json
 
 {
   "name": "Dani Lesmiadi",
-  "email": "dani.lesmiadi@pegadaian.co.id",
+  "email": "dani.lesmiadi@gmail.com",
   "password": "password"
 }
 
 ### Auth me
 GET {{baseUrl}}/auth/me
+Authorization: {{token}}
+
+### Seed
+GET {{baseUrl}}/seed
 Authorization: {{token}}
 
 ### users
