@@ -12,13 +12,14 @@ import {
 } from '@nestjs/common';
 import { MongoIdPipe } from '../shared/pipes/mongoId.pipe';
 
-import { AuditTrailDto } from '../audit-trails/audit-trail.dto';
+import { EResourceAction } from 'src/shared/interfaces/resource-action';
+import { generateAuditData } from 'src/utils/generate-audit-data';
 import { AuditTrailsService } from '../audit-trails/audit-trails.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../shared/guards/roles.decorator';
+import { RolesGuard } from '../shared/guards/roles.guard';
 import { IRequest } from '../shared/interfaces/request.interface';
 import { EUserRole } from '../shared/interfaces/user-role.enum';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { RolesGuard } from '../shared/guards/roles.guard';
 import { ResourcePaginationPipe } from '../shared/pipes/resource-pagination.pipe';
 import {
   responseCollection,
@@ -29,8 +30,6 @@ import {
 } from '../utils/response-parser';
 import { CreateCheckListDto, UpdateCheckListDto } from './check-list.dto';
 import { CheckListService } from './check-list.service';
-import { generateAuditData } from 'src/utils/generate-audit-data';
-import { EResourceAction } from 'src/shared/interfaces/resource-action';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('check-lists')

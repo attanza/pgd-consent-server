@@ -7,9 +7,14 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
+import { AuditTrailsService } from '../audit-trails/audit-trails.service';
+import { IRequest } from '../shared/interfaces/request.interface';
+import { EResourceAction } from '../shared/interfaces/resource-action';
+import { generateAuditData } from '../utils/generate-audit-data';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../shared/guards/roles.decorator';
@@ -31,7 +36,10 @@ import { ConsentService } from './consent.service';
 @Controller('consents')
 export class ConsentController {
   private resource = 'Consent';
-  constructor(private readonly service: ConsentService) {}
+  constructor(
+    private readonly service: ConsentService,
+    private readonly auditService: AuditTrailsService,
+  ) {}
 
   @Get()
   async paginate(@Query() query: ResourcePaginationPipe) {
@@ -47,7 +55,7 @@ export class ConsentController {
   }
 
   @Post()
-  async create(@Body() data: CreateConsentDto) {
+  async create(@Body() data: CreateConsentDto, @Req() req: IRequest) {
     if (!data.email && !data.nik && !data.phone) {
       throw new UnprocessableEntityException(
         'one of fields [nik, phone, email, cif] should exists',
@@ -55,6 +63,8 @@ export class ConsentController {
     }
 
     const result = await this.service.createOrUpdate(data);
+    const auditData = generateAuditData(req, EResourceAction.CREATE, this.resource, result);
+    this.auditService.auditTrail(auditData);
     return responseCreate(this.resource, result);
   }
 
@@ -65,16 +75,21 @@ export class ConsentController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() data: UpdateConsentDto) {
+  async update(@Param('id') id: string, @Body() data: UpdateConsentDto, @Req() req: IRequest) {
+    const found = await this.service.getConsent(id);
     const result = await this.service.createOrUpdate(data);
-
+    const auditData = generateAuditData(req, EResourceAction.UPDATE, this.resource, result, found);
+    this.auditService.auditTrail(auditData);
     return responseUpdate(this.resource, result);
   }
 
   @Delete(':id')
   @Roles(EUserRole.ADMIN)
-  async destroy(@Param() { id }: MongoIdPipe) {
+  async destroy(@Param() { id }: MongoIdPipe, @Req() req: IRequest) {
+    const found = await this.service.getConsent(id);
     await this.service.delete(id);
+    const auditData = generateAuditData(req, EResourceAction.DELETE, this.resource, {}, found);
+    this.auditService.auditTrail(auditData);
     return responseDelete(this.resource);
   }
 
