@@ -1,6 +1,6 @@
-import { User } from '../../user/user.schema';
 import { Request } from 'express';
+import { UserDocument } from '../../user/user.schema';
 
 export interface IRequest extends Request {
-  user: User;
+  user: UserDocument;
 }

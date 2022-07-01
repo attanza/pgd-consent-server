@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { ClientKafka } from '@nestjs/microservices';
 import { FilterQuery, ProjectionType, QueryOptions } from 'mongoose';
 import { Pagination } from 'mongoose-paginate-ts';
+import { AuditTrailsService } from 'src/audit-trails/audit-trails.service';
 
 import { queryStringParser } from '../../utils/parseQueryString';
 import { ResourcePaginationPipe } from '../pipes/resource-pagination.pipe';

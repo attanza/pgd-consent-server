@@ -1,20 +1,15 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  HttpCode,
   Param,
   Post,
   Put,
   Query,
   UnprocessableEntityException,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../shared/guards/roles.decorator';
@@ -27,7 +22,6 @@ import {
   responseCreate,
   responseDelete,
   responseDetail,
-  responseSuccess,
   responseUpdate,
 } from '../utils/response-parser';
 import { CreateConsentDto, UpdateConsentDto } from './consent.dto';
@@ -84,14 +78,14 @@ export class ConsentController {
     return responseDelete(this.resource);
   }
 
-  @Post(':id/add-attachment')
-  @HttpCode(200)
-  @UseInterceptors(FileInterceptor('file'))
-  async addAttachment(@Param() { id }: MongoIdPipe, @UploadedFile() file: Express.Multer.File) {
-    if (!file) {
-      throw new BadRequestException('file is required');
-    }
-    await this.service.addAttachment(id, file);
-    return responseSuccess('File uploaded', undefined);
-  }
+  // @Post(':id/add-attachment')
+  // @HttpCode(200)
+  // @UseInterceptors(FileInterceptor('file'))
+  // async addAttachment(@Param() { id }: MongoIdPipe, @UploadedFile() file: Express.Multer.File) {
+  //   if (!file) {
+  //     throw new BadRequestException('file is required');
+  //   }
+  //   await this.service.addAttachment(id, file);
+  //   return responseSuccess('File uploaded', undefined);
+  // }
 }
