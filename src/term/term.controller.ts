@@ -29,6 +29,7 @@ import {
 } from '../utils/response-parser';
 import { CreateTermDto, UpdateTermDto } from './term.dto';
 import { TermService } from './term.service';
+import { SourcesService } from 'src/sources/sources.service';
 
 @UseGuards(RolesGuard)
 @Controller('terms')
@@ -37,6 +38,7 @@ export class TermController {
   constructor(
     private readonly service: TermService,
     private readonly auditService: AuditTrailsService,
+    private readonly sourceService: SourcesService,
   ) {}
 
   @Get()
@@ -50,6 +52,9 @@ export class TermController {
   async create(@Body() data: CreateTermDto, @Req() req: IRequest) {
     if (data.checkLists) {
       await this.service.checkListExists(data.checkLists);
+    }
+    if (data.source) {
+      await this.sourceService.getById(data.source);
     }
     const result = await this.service.create(data, ['title']);
     const auditData = generateAuditData(req, EResourceAction.CREATE, this.resource, result);
@@ -72,6 +77,9 @@ export class TermController {
     const found = await this.service.getById(id);
     if (data.checkLists) {
       await this.service.checkListExists(data.checkLists);
+    }
+    if (data.source) {
+      await this.sourceService.getById(data.source);
     }
     const result = await this.service.update(found, data, ['title']);
     const auditData = generateAuditData(req, EResourceAction.UPDATE, this.resource, result, found);

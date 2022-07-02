@@ -1,6 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsIn, IsNotEmpty, IsString } from 'class-validator';
-import { EApplicationType } from 'src/shared/interfaces/apllication-type.enum';
+import { IsMongoId, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateCheckListDto {
   @IsNotEmpty()
@@ -8,7 +7,7 @@ export class CreateCheckListDto {
   content: string;
 
   @IsNotEmpty()
-  @IsIn(Object.values(EApplicationType))
+  @IsMongoId()
   source: string;
 }
 

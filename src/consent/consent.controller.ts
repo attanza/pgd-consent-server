@@ -30,6 +30,7 @@ import {
 } from '../utils/response-parser';
 import { CreateConsentDto, UpdateConsentDto } from './consent.dto';
 import { ConsentService } from './consent.service';
+import { SourcesService } from 'src/sources/sources.service';
 
 @UseGuards(RolesGuard)
 @Controller('consents')
@@ -38,6 +39,7 @@ export class ConsentController {
   constructor(
     private readonly service: ConsentService,
     private readonly auditService: AuditTrailsService,
+    private readonly sourceService: SourcesService,
   ) {}
 
   @Get()
@@ -60,7 +62,9 @@ export class ConsentController {
         'one of fields [nik, phone, email, cif] should exists',
       );
     }
-
+    if (data.source) {
+      await this.sourceService.getById(data.source);
+    }
     const result = await this.service.createOrUpdate(data, req);
     const auditData = generateAuditData(req, EResourceAction.CREATE, this.resource, result);
     this.auditService.auditTrail(auditData);
@@ -75,6 +79,9 @@ export class ConsentController {
 
   @Put(':id')
   async update(@Param('id') id: string, @Body() data: UpdateConsentDto, @Req() req: IRequest) {
+    if (data.source) {
+      await this.sourceService.getById(data.source);
+    }
     const found = await this.service.getConsent(id);
     const result = await this.service.createOrUpdate(data, req);
     const auditData = generateAuditData(req, EResourceAction.UPDATE, this.resource, result, found);

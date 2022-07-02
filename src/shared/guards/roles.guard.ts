@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { User } from 'src/user/user.schema';
-import { Redis } from 'src/utils/redis';
+import { User } from '../../user/user.schema';
+import { Redis } from '../../utils/redis';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -17,11 +17,10 @@ export class RolesGuard implements CanActivate {
     const userId = request.headers['x-auth-id'];
 
     const user = await Redis.get<User>(`Authorized_${userId}`);
-
-    if (user) {
-      return roles.includes(user.role);
-    } else {
+    if (!user) {
       return false;
     }
+    request.user = user;
+    return roles.includes(user.role);
   }
 }

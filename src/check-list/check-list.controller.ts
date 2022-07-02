@@ -30,6 +30,7 @@ import {
 } from '../utils/response-parser';
 import { CreateCheckListDto, UpdateCheckListDto } from './check-list.dto';
 import { CheckListService } from './check-list.service';
+import { SourcesService } from 'src/sources/sources.service';
 
 @UseGuards(RolesGuard)
 @Controller('check-lists')
@@ -38,6 +39,7 @@ export class CheckListController {
   constructor(
     private readonly service: CheckListService,
     private readonly auditService: AuditTrailsService,
+    private readonly sourceService: SourcesService,
   ) {}
 
   @Get()
@@ -49,6 +51,9 @@ export class CheckListController {
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.EDITOR)
   async create(@Body() data: CreateCheckListDto, @Req() req: IRequest) {
+    if (data.source) {
+      await this.sourceService.getById(data.source);
+    }
     const result = await this.service.create(data, ['content']);
     const auditData = generateAuditData(req, EResourceAction.CREATE, this.resource, result);
     this.auditService.auditTrail(auditData);
@@ -68,6 +73,9 @@ export class CheckListController {
     @Body() data: UpdateCheckListDto,
     @Req() req: IRequest,
   ) {
+    if (data.source) {
+      await this.sourceService.getById(data.source);
+    }
     const found = await this.service.getById(id);
     const result = await this.service.update(found, data, ['content']);
     const auditData = generateAuditData(req, EResourceAction.UPDATE, this.resource, result, found);

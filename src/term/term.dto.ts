@@ -1,15 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import {
-  IsArray,
-  IsBoolean,
-  IsIn,
-  IsMongoId,
-  IsNotEmpty,
-  IsOptional,
-  MaxLength,
-} from 'class-validator';
-
-import { EApplicationType } from '../shared/interfaces/apllication-type.enum';
+import { IsArray, IsBoolean, IsMongoId, IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
 
 export class CreateTermDto {
   @IsNotEmpty()
@@ -24,7 +14,7 @@ export class CreateTermDto {
   isPublish: boolean;
 
   @IsNotEmpty()
-  @IsIn(Object.values(EApplicationType))
+  @IsMongoId()
   source: string;
 
   @IsOptional()

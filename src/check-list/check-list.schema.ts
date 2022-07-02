@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
+import { Source } from '../sources/source.schema';
 
 export type CheckListDocument = CheckList & Document;
 
@@ -10,8 +11,8 @@ export class CheckList {
   @Prop({ unique: true })
   content: string;
 
-  @Prop()
-  source: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Source' })
+  source: Source;
 }
 
 export const CheckListSchema = SchemaFactory.createForClass(CheckList);

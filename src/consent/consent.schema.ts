@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
+import { Source } from '../sources/source.schema';
 import { CheckList } from '../check-list/check-list.schema';
 
 import { Term } from '../term/term.schema';
@@ -44,8 +45,8 @@ export class Consent {
   @Prop()
   name: string;
 
-  @Prop()
-  source: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Source' })
+  source: Source;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Term' })
   term: Term;

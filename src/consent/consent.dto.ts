@@ -1,14 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import {
-  IsArray,
-  IsEmail,
-  IsIn,
-  IsMongoId,
-  IsNotEmpty,
-  IsOptional,
-  MaxLength,
-} from 'class-validator';
-import { EApplicationType } from '../shared/interfaces/apllication-type.enum';
+import { IsArray, IsEmail, IsMongoId, IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
 
 export class CreateConsentDto {
   @IsOptional()
@@ -32,7 +23,7 @@ export class CreateConsentDto {
   phone: string;
 
   @IsNotEmpty()
-  @IsIn(Object.values(EApplicationType))
+  @IsMongoId()
   source: string;
 
   @IsOptional()
