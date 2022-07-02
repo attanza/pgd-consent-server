@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuditTrailsService } from '../audit-trails/audit-trails.service';
 import { Roles } from '../shared/guards/roles.decorator';
+import { RolesGuard } from '../shared/guards/roles.guard';
 import { IRequest } from '../shared/interfaces/request.interface';
 import { EResourceAction } from '../shared/interfaces/resource-action';
 import { EUserRole } from '../shared/interfaces/user-role.enum';
@@ -27,11 +28,8 @@ import {
 } from '../utils/response-parser';
 import { CreateSourceDto, UpdateSourceDto } from './source.dto';
 import { SourcesService } from './sources.service';
-import { Request } from 'express';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { RolesGuard } from '../shared/guards/roles.guard';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Controller('sources')
 export class SourcesController {
   private resource = 'Source';

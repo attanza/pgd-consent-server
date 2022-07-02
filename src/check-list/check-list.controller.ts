@@ -31,7 +31,7 @@ import {
 import { CreateCheckListDto, UpdateCheckListDto } from './check-list.dto';
 import { CheckListService } from './check-list.service';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Controller('check-lists')
 export class CheckListController {
   private resource = 'CheckList';

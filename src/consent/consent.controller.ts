@@ -16,7 +16,6 @@ import { IRequest } from '../shared/interfaces/request.interface';
 import { EResourceAction } from '../shared/interfaces/resource-action';
 import { generateAuditData } from '../utils/generate-audit-data';
 
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../shared/guards/roles.decorator';
 import { RolesGuard } from '../shared/guards/roles.guard';
 import { EUserRole } from '../shared/interfaces/user-role.enum';
@@ -32,7 +31,7 @@ import {
 import { CreateConsentDto, UpdateConsentDto } from './consent.dto';
 import { ConsentService } from './consent.service';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Controller('consents')
 export class ConsentController {
   private resource = 'Consent';
@@ -84,7 +83,7 @@ export class ConsentController {
   }
 
   @Delete(':id')
-  // @Roles(EUserRole.ADMIN)
+  @Roles(EUserRole.ADMIN)
   async destroy(@Param() { id }: MongoIdPipe, @Req() req: IRequest) {
     const found = await this.service.getConsent(id);
     await this.service.delete(found);

@@ -12,8 +12,14 @@ import {
 } from '@nestjs/common';
 import { MongoIdPipe } from '../shared/pipes/mongoId.pipe';
 
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuditTrailsService } from 'src/audit-trails/audit-trails.service';
+import { Roles } from '../shared/guards/roles.decorator';
+import { RolesGuard } from '../shared/guards/roles.guard';
+import { IRequest } from '../shared/interfaces/request.interface';
+import { EResourceAction } from '../shared/interfaces/resource-action';
+import { EUserRole } from '../shared/interfaces/user-role.enum';
 import { ResourcePaginationPipe } from '../shared/pipes/resource-pagination.pipe';
+import { generateAuditData } from '../utils/generate-audit-data';
 import {
   responseCollection,
   responseCreate,
@@ -23,15 +29,8 @@ import {
 } from '../utils/response-parser';
 import { CreateTermDto, UpdateTermDto } from './term.dto';
 import { TermService } from './term.service';
-import { RolesGuard } from '../shared/guards/roles.guard';
-import { Roles } from '../shared/guards/roles.decorator';
-import { EUserRole } from '../shared/interfaces/user-role.enum';
-import { IRequest } from '../shared/interfaces/request.interface';
-import { AuditTrailsService } from 'src/audit-trails/audit-trails.service';
-import { EResourceAction } from '../shared/interfaces/resource-action';
-import { generateAuditData } from '../utils/generate-audit-data';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Controller('terms')
 export class TermController {
   private resource = 'Term';

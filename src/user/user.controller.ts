@@ -10,10 +10,15 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuditTrailsService } from '../audit-trails/audit-trails.service';
 import { Roles } from '../shared/guards/roles.decorator';
+import { RolesGuard } from '../shared/guards/roles.guard';
+import { IRequest } from '../shared/interfaces/request.interface';
+import { EResourceAction } from '../shared/interfaces/resource-action';
+import { EUserRole } from '../shared/interfaces/user-role.enum';
 import { MongoIdPipe } from '../shared/pipes/mongoId.pipe';
 import { ResourcePaginationPipe } from '../shared/pipes/resource-pagination.pipe';
+import { generateAuditData } from '../utils/generate-audit-data';
 import {
   responseCollection,
   responseCreate,
@@ -23,14 +28,8 @@ import {
 } from '../utils/response-parser';
 import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { UserService } from './user.service';
-import { EUserRole } from '../shared/interfaces/user-role.enum';
-import { RolesGuard } from '../shared/guards/roles.guard';
-import { IRequest } from '../shared/interfaces/request.interface';
-import { AuditTrailsService } from '../audit-trails/audit-trails.service';
-import { EResourceAction } from '../shared/interfaces/resource-action';
-import { generateAuditData } from '../utils/generate-audit-data';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Controller('users')
 export class UserController {
   private resource = 'User';
