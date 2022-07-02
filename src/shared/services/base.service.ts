@@ -72,23 +72,21 @@ export abstract class BaseService<T> {
     await this.dbModel.insertMany(data);
   }
 
-  async update(id: string, updateDto: any, uniques: string[] = []): Promise<T> {
-    const found = await this.getById(id);
+  async update(data: any, updateDto: any, uniques: string[] = []): Promise<T> {
     if (Object.keys(updateDto).length > 0) {
-      await this.shouldUnique(updateDto, uniques, id);
+      await this.shouldUnique(updateDto, uniques, data._id);
       Object.keys(updateDto).map((key) => {
         if (updateDto.hasOwnProperty(key)) {
-          found[key] = updateDto[key];
+          data[key] = updateDto[key];
         }
       });
-      await found.save();
+      await data.save();
     }
-    return found;
+    return data;
   }
 
-  async delete(id: string): Promise<void> {
-    const found = await this.getById(id);
-    await found.delete();
+  async delete(data: any): Promise<void> {
+    await data.delete();
   }
 
   /**

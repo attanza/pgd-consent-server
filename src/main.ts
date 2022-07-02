@@ -8,6 +8,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { AllExceptionsFilter } from './utils/http-exception.filter';
+import { Transport } from '@nestjs/microservices';
 async function bootstrap() {
   envalidate();
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -27,7 +28,18 @@ async function bootstrap() {
   app.use(morgan('combined'));
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalPipes(new ValidationPipe());
-  // app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  app.connectMicroservice({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        brokers: ['localhost:9092'],
+      },
+      consumer: {
+        groupId: 'consent-consumer',
+      },
+    },
+  });
+  await app.startAllMicroservices();
   await app.listen(PORT);
   Logger.log(`App running at http://localhost:${PORT}`, 'Bootstrap');
 }

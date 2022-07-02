@@ -62,7 +62,7 @@ export class ConsentController {
       );
     }
 
-    const result = await this.service.createOrUpdate(data);
+    const result = await this.service.createOrUpdate(data, req);
     const auditData = generateAuditData(req, EResourceAction.CREATE, this.resource, result);
     this.auditService.auditTrail(auditData);
     return responseCreate(this.resource, result);
@@ -77,30 +77,19 @@ export class ConsentController {
   @Put(':id')
   async update(@Param('id') id: string, @Body() data: UpdateConsentDto, @Req() req: IRequest) {
     const found = await this.service.getConsent(id);
-    const result = await this.service.createOrUpdate(data);
+    const result = await this.service.createOrUpdate(data, req);
     const auditData = generateAuditData(req, EResourceAction.UPDATE, this.resource, result, found);
     this.auditService.auditTrail(auditData);
     return responseUpdate(this.resource, result);
   }
 
   @Delete(':id')
-  @Roles(EUserRole.ADMIN)
+  // @Roles(EUserRole.ADMIN)
   async destroy(@Param() { id }: MongoIdPipe, @Req() req: IRequest) {
     const found = await this.service.getConsent(id);
-    await this.service.delete(id);
+    await this.service.delete(found);
     const auditData = generateAuditData(req, EResourceAction.DELETE, this.resource, {}, found);
     this.auditService.auditTrail(auditData);
     return responseDelete(this.resource);
   }
-
-  // @Post(':id/add-attachment')
-  // @HttpCode(200)
-  // @UseInterceptors(FileInterceptor('file'))
-  // async addAttachment(@Param() { id }: MongoIdPipe, @UploadedFile() file: Express.Multer.File) {
-  //   if (!file) {
-  //     throw new BadRequestException('file is required');
-  //   }
-  //   await this.service.addAttachment(id, file);
-  //   return responseSuccess('File uploaded', undefined);
-  // }
 }

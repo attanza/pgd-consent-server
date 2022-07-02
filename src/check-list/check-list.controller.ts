@@ -69,7 +69,7 @@ export class CheckListController {
     @Req() req: IRequest,
   ) {
     const found = await this.service.getById(id);
-    const result = await this.service.update(id, data, ['content']);
+    const result = await this.service.update(found, data, ['content']);
     const auditData = generateAuditData(req, EResourceAction.UPDATE, this.resource, result, found);
     this.auditService.auditTrail(auditData);
     return responseUpdate(this.resource, result);
@@ -79,7 +79,7 @@ export class CheckListController {
   @Roles(EUserRole.ADMIN)
   async destroy(@Param() { id }: MongoIdPipe, @Req() req: IRequest) {
     const found = await this.service.getById(id);
-    await this.service.delete(id);
+    await this.service.delete(found);
     const auditData = generateAuditData(req, EResourceAction.DELETE, this.resource, {}, found);
     this.auditService.auditTrail(auditData);
     return responseDelete(this.resource);

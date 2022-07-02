@@ -10,10 +10,14 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuditTrailsService } from '../audit-trails/audit-trails.service';
 import { Roles } from '../shared/guards/roles.decorator';
+import { IRequest } from '../shared/interfaces/request.interface';
+import { EResourceAction } from '../shared/interfaces/resource-action';
+import { EUserRole } from '../shared/interfaces/user-role.enum';
 import { MongoIdPipe } from '../shared/pipes/mongoId.pipe';
 import { ResourcePaginationPipe } from '../shared/pipes/resource-pagination.pipe';
+import { generateAuditData } from '../utils/generate-audit-data';
 import {
   responseCollection,
   responseCreate,
@@ -21,53 +25,50 @@ import {
   responseDetail,
   responseUpdate,
 } from '../utils/response-parser';
-import { CreateUserDto, UpdateUserDto } from './user.dto';
-import { UserService } from './user.service';
-import { EUserRole } from '../shared/interfaces/user-role.enum';
+import { CreateSourceDto, UpdateSourceDto } from './source.dto';
+import { SourcesService } from './sources.service';
+import { Request } from 'express';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../shared/guards/roles.guard';
-import { IRequest } from '../shared/interfaces/request.interface';
-import { AuditTrailsService } from '../audit-trails/audit-trails.service';
-import { EResourceAction } from '../shared/interfaces/resource-action';
-import { generateAuditData } from '../utils/generate-audit-data';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('users')
-export class UserController {
-  private resource = 'User';
+@Controller('sources')
+export class SourcesController {
+  private resource = 'Source';
   constructor(
-    private readonly service: UserService,
+    private readonly service: SourcesService,
     private readonly auditService: AuditTrailsService,
   ) {}
 
   @Get()
-  @Roles(EUserRole.ADMIN)
   async paginate(@Query() query: ResourcePaginationPipe) {
-    query.select = '-password';
-    const result = await this.service.paginate(query);
+    const result = await this.service.paginate(query, ['name', 'ipAddresses']);
     return responseCollection(this.resource, result);
   }
 
   @Post()
-  @Roles(EUserRole.ADMIN)
-  async create(@Body() data: CreateUserDto, @Req() req: IRequest) {
-    const result = await this.service.create(data, ['email']);
+  @Roles(EUserRole.ADMIN, EUserRole.EDITOR)
+  async create(@Body() data: CreateSourceDto, @Req() req: IRequest) {
+    const { clientId, clientSecret } = this.service.generateSecret();
+    const postData: any = { ...data, clientId, clientSecret };
+    const result = await this.service.create(postData, ['name']);
     const auditData = generateAuditData(req, EResourceAction.CREATE, this.resource, result);
     this.auditService.auditTrail(auditData);
     return responseCreate(this.resource, result);
   }
 
   @Get(':id')
-  @Roles(EUserRole.ADMIN)
   async get(@Param() { id }: MongoIdPipe) {
     const result = await this.service.findOrFail({ _id: id });
     return responseDetail(this.resource, result);
   }
 
   @Put(':id')
-  @Roles(EUserRole.ADMIN)
-  async update(@Param() { id }: MongoIdPipe, @Body() data: UpdateUserDto, @Req() req: IRequest) {
+  @Roles(EUserRole.ADMIN, EUserRole.EDITOR)
+  async update(@Param() { id }: MongoIdPipe, @Body() data: UpdateSourceDto, @Req() req: IRequest) {
     const found = await this.service.getById(id);
-    const result = await this.service.update(found, data, ['email']);
+
+    const result = await this.service.update(found, data, ['name']);
     const auditData = generateAuditData(req, EResourceAction.UPDATE, this.resource, result, found);
     this.auditService.auditTrail(auditData);
     return responseUpdate(this.resource, result);

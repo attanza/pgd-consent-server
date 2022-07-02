@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheInterceptor, CacheModule, Module } from '@nestjs/common';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -9,10 +9,35 @@ import { DatabaseModule } from './database/database.module';
 import { TermModule } from './term/term.module';
 import { UserModule } from './user/user.module';
 import { AuditTrailsModule } from './audit-trails/audit-trails.module';
-
+import { SourcesModule } from './sources/sources.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import * as redisStore from 'cache-manager-redis-store';
+import type { ClientOpts } from 'redis';
 @Module({
-  imports: [DatabaseModule, UserModule, AuthModule, CheckListModule, TermModule, ConsentModule, AuditTrailsModule],
+  imports: [
+    DatabaseModule,
+    UserModule,
+    AuthModule,
+    CheckListModule,
+    TermModule,
+    ConsentModule,
+    AuditTrailsModule,
+    SourcesModule,
+    CacheModule.register<ClientOpts>({
+      isGlobal: true,
+      store: redisStore,
+
+      host: process.env.REDIS_URL,
+      port: 6379,
+    }),
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
+    },
+  ],
 })
 export class AppModule {}

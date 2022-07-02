@@ -9,11 +9,19 @@ import { BaseService } from '../shared/services/base.service';
 import { TermService } from '../term/term.service';
 import { CreateConsentDto, UpdateConsentDto } from './consent.dto';
 import { Consent, ConsentDocument } from './consent.schema';
+import { AddAttachmentEvent } from 'src/events/add-attachment.event';
+import { AuditTrailsService } from 'src/audit-trails/audit-trails.service';
+import { IRequest } from 'src/shared/interfaces/request.interface';
+import { generateAuditData } from 'src/utils/generate-audit-data';
+import { EResourceAction } from 'src/shared/interfaces/resource-action';
 @Injectable()
 export class ConsentService extends BaseService<ConsentDocument> {
+  private resource = 'Consent';
+
   constructor(
     @InjectModel(Consent.name) private model: Pagination<ConsentDocument>,
     private readonly termService: TermService,
+    private readonly auditService: AuditTrailsService,
   ) {
     super(model);
   }
@@ -26,11 +34,15 @@ export class ConsentService extends BaseService<ConsentDocument> {
     return term;
   }
 
-  async createOrUpdate(dto: CreateConsentDto | UpdateConsentDto): Promise<ConsentDocument> {
+  async createOrUpdate(
+    dto: CreateConsentDto | UpdateConsentDto,
+    req: IRequest,
+  ): Promise<ConsentDocument> {
     if (Object.keys(dto).length === 0) {
       throw new BadRequestException(`${this.model.modelName} not found`);
     }
     let found: ConsentDocument;
+    let oldData: ConsentDocument;
     const keys = ['nik', 'phone', 'email', 'cif'];
     const or: any = [];
     Object.keys(dto).map((d) => {
@@ -41,7 +53,10 @@ export class ConsentService extends BaseService<ConsentDocument> {
     found = await this.findOne({ $or: or });
     if (!found) {
       found = await this.create(dto, keys);
+      const auditData = generateAuditData(req, EResourceAction.CREATE, this.resource, found);
+      this.auditService.auditTrail(auditData);
     } else {
+      oldData = Object.assign({}, found);
       if (dto.term) {
         const term = await this.checkTerm(dto.term);
         const checkListString: string[] = [];
@@ -67,6 +82,14 @@ export class ConsentService extends BaseService<ConsentDocument> {
         }
       });
       await found.save();
+      const auditData = generateAuditData(
+        req,
+        EResourceAction.UPDATE,
+        this.resource,
+        found,
+        oldData,
+      );
+      this.auditService.auditTrail(auditData);
     }
 
     return found;
@@ -103,29 +126,12 @@ export class ConsentService extends BaseService<ConsentDocument> {
     return found;
   }
 
-  // async addAttachment(id: string, file: Express.Multer.File) {
-  //   if (!(file.mimetype.includes('jpeg') || file.mimetype.includes('png'))) {
-  //     throw new BadRequestException('File type not supported');
-  //   }
-  //   const timestamp = Date.now().toString();
-  //   const hashedFileName = crypto.createHash('md5').update(timestamp).digest('hex');
-  //   const extension = file.originalname.substring(
-  //     file.originalname.lastIndexOf('.'),
-  //     file.originalname.length,
-  //   );
-
-  //   // We need to append the extension at the end otherwise Minio will save it as a generic file
-  //   const filename = hashedFileName + extension;
-  //   const fileUploadData: IFIleUploadData = {
-  //     id,
-  //     buffer: file.buffer,
-  //     filename,
-  //     mimetype: file.mimetype,
-  //     size: file.size,
-  //   };
-  //   console.log('fileUploadData', fileUploadData);
-
-  //   // await this.queueService.fileUpload(fileUploadData);
-  //   await this.minioService.upload(file.buffer, filename, file.mimetype, file.size);
-  // }
+  async handleAttachment(data: AddAttachmentEvent) {
+    const { resourceId, fileName } = data;
+    const consent = await this.findById<ConsentDocument>(resourceId);
+    if (consent) {
+      consent.attachments.push(fileName);
+      await consent.save();
+    }
+  }
 }
