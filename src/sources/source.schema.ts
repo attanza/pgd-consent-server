@@ -14,7 +14,7 @@ export class Source {
   description: string;
 
   @Prop()
-  idAddresses: string[];
+  ipAddresses: string[];
 
   @Prop()
   clientId: string;

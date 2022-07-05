@@ -17,13 +17,17 @@ import {
   validationFailedExpect,
 } from './expects';
 import { APP_URL, faker, generateTokenByRole } from './helper';
+import { Source, SourceSchema } from '../src/sources/source.schema';
 const resource = 'Term';
 const URL = '/terms';
 let userModel: mongoose.Model<User>;
 let termModel: mongoose.Model<Term>;
+let sourceModel: mongoose.Model<Source>;
+
 let adminToken;
 let viewerToken;
 let found;
+let source: any;
 
 const createData: UpdateTermDto = {
   title: faker.sentence(),
@@ -35,6 +39,9 @@ beforeAll(async () => {
   const MONGOOSE_URI = process.env.DB_URL;
   await mongoose.connect(MONGOOSE_URI);
   userModel = mongoose.model('User', UserSchema);
+  sourceModel = mongoose.model('Source', SourceSchema);
+  source = await sourceModel.findOne();
+  createData.source = source._id.toString();
   adminToken = await generateTokenByRole(userModel, EUserRole.ADMIN);
   viewerToken = await generateTokenByRole(userModel, EUserRole.VIEWER);
   termModel = mongoose.model('Term', TermSchema);
@@ -162,7 +169,10 @@ describe(`${resource} Detail`, () => {
       .expect(({ body }) => {
         showExpect(expect, body, resource);
         const output = { ...body };
-        const dataToCheck = { ...createData };
+        const dataToCheck = {
+          ...createData,
+          source: { _id: source._id.toString(), name: source.name },
+        };
         Object.keys(dataToCheck).map((key) => {
           expect(output.data[key]).toEqual(dataToCheck[key]);
         });

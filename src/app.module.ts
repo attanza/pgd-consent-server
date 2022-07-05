@@ -12,6 +12,7 @@ import { DatabaseModule } from './database/database.module';
 import { SourcesModule } from './sources/sources.module';
 import { TermModule } from './term/term.module';
 import { UserModule } from './user/user.module';
+import { StatisticsModule } from './statistics/statistics.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -28,6 +29,7 @@ import { UserModule } from './user/user.module';
       host: process.env.REDIS_URL,
       port: 6379,
     }),
+    StatisticsModule,
   ],
   controllers: [AppController],
   providers: [

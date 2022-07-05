@@ -15,4 +15,8 @@ export class SourcesService extends BaseService<SourceDocument> {
     const clientSecret = crypto.randomBytes(32).toString('hex');
     return { clientId, clientSecret };
   }
+
+  async findInIds(ids: string[], select: string) {
+    return this.model.find({ _id: { $in: ids } }).select(select);
+  }
 }

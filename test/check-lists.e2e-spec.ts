@@ -17,11 +17,13 @@ import {
 } from './expects';
 import { APP_URL, faker, generateTokenByRole } from './helper';
 import { EUserRole } from '../src/shared/interfaces/user-role.enum';
+import { Source, SourceSchema } from '../src/sources/source.schema';
 
 const resource = 'CheckList';
 const URL = '/check-lists';
 let userModel: mongoose.Model<User>;
 let checkListModel: mongoose.Model<CheckList>;
+let sourceModel: mongoose.Model<Source>;
 let adminToken;
 let viewerToken;
 let found;
@@ -35,6 +37,9 @@ beforeAll(async () => {
   const MONGOOSE_URI = process.env.DB_URL;
   await mongoose.connect(MONGOOSE_URI);
   userModel = mongoose.model('User', UserSchema);
+  sourceModel = mongoose.model('Source', SourceSchema);
+  const source = await sourceModel.findOne();
+  createData.source = source._id.toString();
   adminToken = await generateTokenByRole(userModel, EUserRole.ADMIN);
   viewerToken = await generateTokenByRole(userModel, EUserRole.VIEWER);
   checkListModel = mongoose.model('CheckList', CheckListSchema);
@@ -73,7 +78,7 @@ describe(`${resource} Create`, () => {
         unauthorizedExpect(expect, body);
       });
   });
-  it('cannot create list if unauthorized', () => {
+  it('cannot create if unauthorized', () => {
     return request(APP_URL)
       .post(URL)
       .set({ Authorization: `Bearer ${viewerToken}` })

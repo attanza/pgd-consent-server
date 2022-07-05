@@ -1,5 +1,7 @@
 import { Logger } from '@nestjs/common';
 import ioredis from 'ioredis';
+import 'dotenv/config';
+
 class RedisInstance {
   redis;
   defaultExpiry = 60 * 60; // 1 hours

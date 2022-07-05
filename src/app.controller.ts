@@ -1,7 +1,6 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { EventPattern } from '@nestjs/microservices';
 import { AppService } from './app.service';
-import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { ConsentService } from './consent/consent.service';
 import { Roles } from './shared/guards/roles.decorator';
 import { RolesGuard } from './shared/guards/roles.guard';
@@ -20,7 +19,7 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles(EUserRole.ADMIN)
   @Get('seed')
   async seed() {

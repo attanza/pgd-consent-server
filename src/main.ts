@@ -12,7 +12,7 @@ import { Transport } from '@nestjs/microservices';
 async function bootstrap() {
   envalidate();
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  mongoose.set('debug', process.env.NODE_ENV === 'development');
+  // mongoose.set('debug', process.env.NODE_ENV === 'development');
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -28,19 +28,19 @@ async function bootstrap() {
   app.use(morgan('combined'));
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalPipes(new ValidationPipe());
-  app.connectMicroservice({
-    transport: Transport.KAFKA,
-    options: {
-      client: {
-        brokers: ['localhost:9092'],
-      },
-      consumer: {
-        groupId: 'consent-consumer',
-      },
-    },
-  });
-  await app.startAllMicroservices();
+  // app.connectMicroservice({
+  //   transport: Transport.KAFKA,
+  //   options: {
+  //     client: {
+  //       brokers: ['localhost:9092'],
+  //     },
+  //     consumer: {
+  //       groupId: 'consent-consumer',
+  //     },
+  //   },
+  // });
+  // await app.startAllMicroservices();
   await app.listen(PORT);
-  Logger.log(`App running at http://localhost:${PORT}`, 'Bootstrap');
+  Logger.log(`Consent Service running at http://localhost:${PORT}`, 'Bootstrap');
 }
 bootstrap();

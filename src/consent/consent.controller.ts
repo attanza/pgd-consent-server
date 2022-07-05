@@ -30,7 +30,7 @@ import {
 } from '../utils/response-parser';
 import { CreateConsentDto, UpdateConsentDto } from './consent.dto';
 import { ConsentService } from './consent.service';
-import { SourcesService } from 'src/sources/sources.service';
+import { SourcesService } from '../sources/sources.service';
 
 @UseGuards(RolesGuard)
 @Controller('consents')
@@ -56,6 +56,7 @@ export class ConsentController {
   }
 
   @Post()
+  @Roles(EUserRole.ALL)
   async create(@Body() data: CreateConsentDto, @Req() req: IRequest) {
     if (!data.email && !data.nik && !data.phone) {
       throw new UnprocessableEntityException(
@@ -78,6 +79,7 @@ export class ConsentController {
   }
 
   @Put(':id')
+  @Roles(EUserRole.ALL)
   async update(@Param('id') id: string, @Body() data: UpdateConsentDto, @Req() req: IRequest) {
     if (data.source) {
       await this.sourceService.getById(data.source);

@@ -64,10 +64,13 @@ export class TermController {
 
   @Get(':id')
   async get(@Param() { id }: MongoIdPipe) {
-    const result = await this.service.findOrFail({ _id: id }, undefined, undefined, {
-      path: 'checkLists',
-      select: 'content',
-    });
+    const result = await this.service.findOrFail({ _id: id }, undefined, undefined, [
+      {
+        path: 'checkLists',
+        select: 'content',
+      },
+      { path: 'source', select: 'name' },
+    ]);
     return responseDetail(this.resource, result);
   }
 

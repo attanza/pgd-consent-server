@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
+import { Source, SourceSchema } from '../src/sources/source.schema';
 import request from 'supertest';
 import { UpdateConsentDto } from '../src/consent/consent.dto';
 import { Consent, ConsentSchema } from '../src/consent/consent.schema';
@@ -21,21 +22,27 @@ const resource = 'Consent';
 const URL = '/consents';
 let userModel: mongoose.Model<User>;
 let consentModel: mongoose.Model<Consent>;
+let sourceModel: mongoose.Model<Source>;
+
 let adminToken;
 let viewerToken;
 let found;
+let source: any;
 let id = '';
 
 const createData: UpdateConsentDto = {
   name: faker.name(),
   email: faker.email(),
-  source: 'PDS',
+  source: '',
 };
 
 beforeAll(async () => {
   const MONGOOSE_URI = process.env.DB_URL;
   await mongoose.connect(MONGOOSE_URI);
   userModel = mongoose.model('User', UserSchema);
+  sourceModel = mongoose.model('Source', SourceSchema);
+  source = await sourceModel.findOne().exec();
+  createData.source = source._id.toString();
   adminToken = await generateTokenByRole(userModel, EUserRole.ADMIN);
   viewerToken = await generateTokenByRole(userModel, EUserRole.VIEWER);
   consentModel = mongoose.model('Consent', ConsentSchema);
@@ -65,10 +72,10 @@ describe(`${resource} List`, () => {
 });
 
 describe(`${resource} validations`, () => {
-  const postData = {
-    source: 'PDS',
-  };
   it('will reject if all keys are empty', () => {
+    const postData = {
+      source: source._id.toString(),
+    };
     return request(APP_URL)
       .post(URL)
       .set({ Authorization: `Bearer ${adminToken}` })
@@ -172,7 +179,10 @@ describe(`${resource} Detail`, () => {
       .expect(({ body }) => {
         showExpect(expect, body, resource);
         const output = { ...body };
-        const dataToCheck = { ...createData };
+        const dataToCheck = {
+          ...createData,
+          source: { _id: source._id.toString(), name: source.name },
+        };
         Object.keys(dataToCheck).map((key) => {
           expect(output.data[key]).toEqual(dataToCheck[key]);
         });

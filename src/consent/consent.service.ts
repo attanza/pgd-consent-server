@@ -100,11 +100,17 @@ export class ConsentService extends BaseService<ConsentDocument> {
     if (isMongoId(id)) {
       found = await this.model
         .findById(id)
-        .populate({
-          path: 'term',
-          select: 'title content',
-          populate: { path: 'checkLists' },
-        })
+        .populate([
+          {
+            path: 'term',
+            select: 'title content',
+            populate: { path: 'checkLists' },
+          },
+          {
+            path: 'source',
+            select: 'name',
+          },
+        ])
         .exec();
     } else {
       const searchable = ['nik', 'phone', 'email'];
@@ -133,5 +139,9 @@ export class ConsentService extends BaseService<ConsentDocument> {
       consent.attachments.push(fileName);
       await consent.save();
     }
+  }
+
+  async sortByCount(group: string) {
+    return this.model.aggregate().sortByCount(group);
   }
 }
